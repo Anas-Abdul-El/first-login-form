@@ -15,6 +15,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import Link from "next/link"
+import { useState, useTransition } from "react"
+import { loginInAction } from "../../../server/login-form-action"
 
 /**
  * Login form component.
@@ -32,14 +34,21 @@ export function LoginForm() {
     },
   })
 
+  const [isLoading, startTransition] = useTransition()
+  const [error, setError] = useState<string>()
+
   /**
    * Handles form submission.
    * 
    * @param {LoginSchemaType} values - Validated form values (email and password)
    */
   function onSubmit(values: LoginSchemaType): void {
-    console.log("Form submitted:", values)
-    alert(`Login successful!\nEmail: ${values.email}`)
+    startTransition(() => {
+      loginInAction(values)
+        .then(res => {
+          setError(res?.error)
+        })
+    })
   }
 
   return (
@@ -87,7 +96,13 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
+            {
+              error &&
+              <div className="border-destructive border p-1">
+                <p className="text-red-500 ml-2">{error}</p>
+              </div>
+            }
+            <Button type="submit" className="w-full" disabled={isLoading}>
               Login
             </Button>
           </form>

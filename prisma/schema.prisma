@@ -13,6 +13,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum userRole {
+  USER
+  ADMIN
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String  @map("user_id")
@@ -47,6 +52,8 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
+  password      String?
+  role          userRole  @default(USER)
   emailVerified DateTime? @map("email_verified")
   image         String?
   accounts      Account[]

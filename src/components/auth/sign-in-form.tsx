@@ -22,6 +22,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import Link from "next/link"
+import { useState, useTransition } from "react"
+import { signInAction } from "../../../server/sign-form-action"
 
 /**
  * Sign-in form component.
@@ -40,14 +42,19 @@ export function SignInForm() {
     },
   })
 
+  const [error, setError] = useState<string | null>()
+  const [isLoading, startTransition] = useTransition()
+
   /**
    * Handles form submission.
    * 
    * @param {FormSchemaType} values - Validated form values (name, email, and password)
    */
-  function onSubmit(values: FormSchemaType): void {
-    console.log("Form submitted:", values)
-    alert(`Sign in successful!\nEmail: ${values.email}`)
+  function onSubmit(values: FormSchemaType) {
+    startTransition(() => {
+      signInAction(values)
+        .then(res => setError(res?.error))
+    })
   }
 
 
@@ -64,7 +71,7 @@ export function SignInForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
@@ -113,7 +120,13 @@ export function SignInForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
+            {
+              error &&
+              <div className="border-destructive border p-1">
+                <p className="text-red-500 ml-2">{error}</p>
+              </div>
+            }
+            <Button type="submit" className="w-full" disabled={isLoading}>
               Sign In
             </Button>
           </form>
